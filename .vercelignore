@@ -1,0 +1,2 @@
+# Ignore node modules from being served as static files
+node_modules/
