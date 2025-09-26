@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XyCloud - Beranda</title>
+
+    <script src="//cdn.jsdelivr.net/npm/eruda"></script>
+    <script>eruda.init();</script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body class="bg-gray-950 text-gray-100 font-['Inter',_sans-serif]">
+    <div class="min-h-screen flex items-center justify-center p-4">
+        <div class="w-full max-w-md">
+            <a href="index.html" class="flex items-center justify-center space-x-3 mb-8"><svg class="w-12 h-12 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18.5 15.5C20.9853 15.5 23 13.4853 23 11C23 8.51472 20.9853 6.5 18.5 6.5C18.5 4.01472 16.4853 2 14 2C11.8524 2 10.0513 3.43852 9.61538 5.5C9.01151 5.18688 8.28112 5 7.5 5C5.01472 5 3 7.01472 3 9.5C3 11.5331 4.34629 13.2234 6.13009 13.827C5.23338 14.8013 4.5 16.208 4.5 17.5C4.5 20.2614 6.73858 22.5 9.5 22.5C11.9853 22.5 14 20.4853 14 18C14 17.8546 13.9931 17.711 13.9798 17.5694C15.2223 16.4192 16.8228 15.5 18.5 15.5Z" stroke="#3b82f6" stroke-width="1.5"/><path d="M13 10C13 8.34315 11.6569 7 10 7C8.34315 7 7 8.34315 7 10C7 11.6569 8.34315 13 10 13C11.6569 13 13 11.6569 13 10Z" fill="#3b82f6"/></svg><h1 class="text-3xl font-extrabold text-blue-400">XyCloud</h1></a>
+            <div class="bg-gray-800 rounded-3xl p-8 border border-gray-700 shadow-xl">
+                <h2 class="text-2xl font-bold text-center text-white mb-6">Selamat Datang</h2>
+                <form id="login-form">
+                    <div class="mb-4"><label for="email" class="block mb-2 text-sm font-medium text-gray-300">Email</label><input type="email" id="email" class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" required></div>
+                    <div class="mb-6"><label for="password" class="block mb-2 text-sm font-medium text-gray-300">Password</label><input type="password" id="password" class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" required></div>
+                    <div class="flex flex-col space-y-4"><button type="submit" id="login-button" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-5 rounded-full transition-colors">Login</button><button type="button" id="register-button" class="w-full bg-gray-600 hover:bg-gray-500 text-white font-bold py-3 px-5 rounded-full transition-colors">Daftar Akun Baru</button></div>
+                </form>
+                <div class="my-6 flex items-center"><hr class="w-full border-gray-600"><span class="px-2 text-gray-400 text-sm">ATAU</span><hr class="w-full border-gray-600"></div>
+                <button id="google-login-button" class="w-full flex items-center justify-center bg-white text-gray-800 font-semibold py-3 px-5 rounded-full hover:bg-gray-200 transition-colors"><svg class="w-5 h-5 mr-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.222,0-9.519-3.486-11.011-8.166l-6.571,4.819C9.656,39.663,16.318,44,24,44z"></path><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.082,5.571l6.19,5.238C39.988,35.45,44,30.138,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path></svg><span>Lanjutkan dengan Google</span></button>
+            </div>
+        </div>
+    </div>
+    <div id="toast-container"></div>
+    
+    <script type="importmap">
+        {
+        "imports": {
+            "firebase/app": "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js",
+            "firebase/auth": "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js",
+            "firebase/firestore": "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js"
+        }
+    }
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    
+    <script type="module" src="js/config.js"></script>
+    <script type="module" src="js/firebase-init.js"></script>
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
+

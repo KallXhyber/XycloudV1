@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XyCloud - Beranda</title>
+
+    <script src="//cdn.jsdelivr.net/npm/eruda"></script>
+    <script>eruda.init();</script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body class="bg-gray-950 text-gray-100 font-['Inter',_sans-serif]">
+    <div id="loading-overlay"><svg class="loading-svg" viewBox="25 25 50 50"><circle class="loading-path" cx="50" cy="50" r="20" fill="none" stroke-width="4" stroke-miterlimit="10"/></svg></div>
+    <header class="bg-gray-900/80 backdrop-blur-sm text-white p-4 shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="index.html" class="flex items-center space-x-3"><svg class="w-12 h-12 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18.5 15.5C20.9853 15.5 23 13.4853 23 11C23 8.51472 20.9853 6.5 18.5 6.5C18.5 4.01472 16.4853 2 14 2C11.8524 2 10.0513 3.43852 9.61538 5.5C9.01151 5.18688 8.28112 5 7.5 5C5.01472 5 3 7.01472 3 9.5C3 11.5331 4.34629 13.2234 6.13009 13.827C5.23338 14.8013 4.5 16.208 4.5 17.5C4.5 20.2614 6.73858 22.5 9.5 22.5C11.9853 22.5 14 20.4853 14 18C14 17.8546 13.9931 17.711 13.9798 17.5694C15.2223 16.4192 16.8228 15.5 18.5 15.5Z" stroke="#3b82f6" stroke-width="1.5"/><path d="M13 10C13 8.34315 11.6569 7 10 7C8.34315 7 7 8.34315 7 10C7 11.6569 8.34315 13 10 13C11.6569 13 13 11.6569 13 10Z" fill="#3b82f6"/></svg><h1 class="text-3xl font-extrabold text-blue-400">XyCloud</h1></a>
+            <nav class="hidden lg:block">
+                <ul class="flex space-x-6 text-lg items-center">
+                    <li><a href="index.html" class="hover:text-blue-400 transition-colors">Beranda</a></li>
+                    <li><a href="paket.html" class="hover:text-blue-400 transition-colors">Paket</a></li>
+                    <li><a href="akun-gta.html" class="hover:text-blue-400 transition-colors">Akun GTA</a></li>
+                    <li><a href="bantuan.html" class="hover:text-blue-400 transition-colors">Bantuan</a></li>
+                    <li id="header-login-button"><a href="login.html" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-5 rounded-full transition-colors">Login</a></li>
+                    <li id="header-user-menu" class="hidden relative user-menu"><button class="flex items-center gap-2"><img id="header-user-avatar" src="" class="w-8 h-8 rounded-full"><svg class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg></button><div class="settings-dropdown w-48"><a href="dashboard.html" class="dropdown-item">Dashboard</a><a id="admin-panel-link" href="admin.html" class="dropdown-item hidden">Panel Admin</a><button id="header-logout-button" class="dropdown-item text-red-400 w-full text-left">Logout</button></div></li>
+                </ul>
+            </nav>
+            <button id="mobile-menu-toggle" class="lg:hidden text-white focus:outline-none"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg></button>
+        </div>
+        <nav id="mobile-menu" class="lg:hidden mt-4 hidden"></nav>
+    </header>
+    <main class="container mx-auto p-4 md:p-8">
+        <section class="my-12">
+            <h2 class="text-4xl md:text-5xl font-extrabold text-center mb-2 text-white">Tutorial Pembuatan Akun</h2>
+            <p class="text-center text-lg text-gray-400 mb-12">Ikuti video di bawah ini untuk membuat akun yang diperlukan.</p>
+            <div class="max-w-4xl mx-auto space-y-12">
+                <div class="bg-gray-800 rounded-3xl p-8 border border-gray-700">
+                    <h3 class="text-2xl font-bold text-blue-300 mb-4">1. Cara Membuat Akun Discord</h3>
+                    <p class="text-gray-400 mb-6">Discord adalah platform komunikasi yang kami gunakan. Anda wajib memilikinya.</p>
+                    <div class="aspect-w-16 aspect-h-9 rounded-2xl overflow-hidden"><iframe src="https://www.youtube.com/embed/c1e8iZ2Q2i4" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="w-full h-full"></iframe></div>
+                </div>
+                <div class="bg-gray-800 rounded-3xl p-8 border border-gray-700">
+                    <h3 class="text-2xl font-bold text-blue-300 mb-4">2. Cara Membuat Akun Steam</h3>
+                    <p class="text-gray-400 mb-6">Steam adalah platform distribusi game digital terbesar yang diperlukan untuk bermain.</p>
+                    <div class="aspect-w-16 aspect-h-9 rounded-2xl overflow-hidden"><iframe src="https://www.youtube.com/embed/YIu2H6v-6-E" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="w-full h-full"></iframe></div>
+                </div>
+                <div class="bg-gray-800 rounded-3xl p-8 border border-gray-700">
+                    <h3 class="text-2xl font-bold text-blue-300 mb-4">3. Cara Membuat Akun Cfx.re (FiveM)</h3>
+                    <p class="text-gray-400 mb-6">Cfx.re adalah akun yang wajib dimiliki untuk dapat bermain di server FiveM.</p>
+                    <div class="aspect-w-16 aspect-h-9 rounded-2xl overflow-hidden"><iframe src="https://www.youtube.com/embed/G-q33n29-g8" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="w-full h-full"></iframe></div>
+                </div>
+                <div class="text-center mt-12">
+                    <a href="paket.html" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full transition-colors">Kembali ke Halaman Paket</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="chatbot-container">
+        <button id="chatbot-toggle" class="bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg transition-transform transform hover:scale-110"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.76 9.76 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-.065 4.48 4.48 0 0 0 .978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z" /></svg></button>
+        <div id="chat-window"><div class="bg-gray-800 p-4 flex justify-between items-center text-gray-200 rounded-t-2xl"><span class="font-bold">KalBot AI</span><button id="chat-close" class="text-gray-400 hover:text-white">&times;</button></div><div id="chat-body"></div><div class="p-4 bg-gray-800 flex rounded-b-2xl"><input type="text" id="chat-input" placeholder="Tanya apa saja..." class="w-full bg-gray-700 text-white p-2 rounded-l-full border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"><button id="send-button" class="bg-blue-600 text-white px-4 rounded-r-full hover:bg-blue-700 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path d="M3.478 2.405a.75.75 0 0 0-.926.94l2.432 7.932a.75.75 0 0 1 0 .639l-2.432 7.932a.75.75 0 0 0 .926.94 60.519 60.519 0 0 0 18.445-8.986.75.75 0 0 0 0-1.218A60.517 60.517 0 0 0 3.478 2.405Z" /></svg></button></div></div>
+    </div>
+    
+    <footer class="bg-gray-900 text-center p-6 mt-8 text-gray-500"><p>&copy; 2024 XyCloud. Semua Hak Cipta Dilindungi.</p><p class="mt-2 text-sm"><a href="bantuan.html" class="hover:text-blue-400 transition-colors">Bantuan</a> &bull; <a href="kontak.html" class="hover:text-blue-400 transition-colors">Hubungi Kami</a></p></footer>
+    <div id="toast-container"></div><div id="live-feed-container"></div>
+    
+    <script type="importmap">
+        {
+        "imports": {
+            "firebase/app": "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js",
+            "firebase/auth": "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js",
+            "firebase/firestore": "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js"
+        }
+    }
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    
+    <script type="module" src="js/config.js"></script>
+    <script type="module" src="js/firebase-init.js"></script>
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
+
+
