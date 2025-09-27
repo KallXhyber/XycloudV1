@@ -1,12 +1,12 @@
-// File: api/chat.js (Versi Groq)
+// api/chat.js (Versi Perbaikan Anti-Gagal)
 
-import Groq from "groq-sdk";
+const { Groq } = require("groq-sdk");
 
 const groq = new Groq({
     apiKey: process.env.GROQ_API_KEY,
 });
 
-export default async function handler(request, response) {
+module.exports = async (request, response) => {
     if (request.method !== 'POST') {
         return response.status(405).json({ error: "Method Not Allowed" });
     }
@@ -25,7 +25,7 @@ export default async function handler(request, response) {
                     content: message,
                 },
             ],
-            model: "llama3-8b-8192", // Model AI yang sangat cepat
+            model: "llama3-8b-8192",
         });
 
         const reply = chatCompletion.choices[0]?.message?.content || "Maaf, saya tidak bisa merespons saat ini.";
@@ -35,4 +35,4 @@ export default async function handler(request, response) {
         console.error("Error calling Groq API:", error);
         return response.status(500).json({ error: "Gagal berkomunikasi dengan AI." });
     }
-}
+};
