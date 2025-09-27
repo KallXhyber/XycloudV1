@@ -1,24 +1,30 @@
-// api/chat.js (Versi Perbaikan Anti-Gagal)
+// File: api/chat.js (Versi Perbaikan Final)
 
-const { Groq } = require("groq-sdk");
+import Groq from "groq-sdk";
 
 const groq = new Groq({
     apiKey: process.env.GROQ_API_KEY,
 });
 
-module.exports = async (request, response) => {
+// Perubahan ada di sini: kita definisikan handler-nya terlebih dahulu
+const handler = async (request, response) => {
     if (request.method !== 'POST') {
         return response.status(405).json({ error: "Method Not Allowed" });
     }
     
     try {
-        const { message } = JSON.parse(request.body);
+        // Vercel otomatis mem-parse body jika config-nya benar
+        const { message } = request.body; 
+
+        if (!message) {
+            return response.status(400).json({ error: "Message is required." });
+        }
 
         const chatCompletion = await groq.chat.completions.create({
             messages: [
                 {
                     role: "system",
-                    content: "Anda adalah KalBot, asisten AI untuk website XyCloud, layanan sewa PC cloud gaming. Jawab pertanyaan pengguna dengan ramah, singkat, dan informatif dalam Bahasa Indonesia."
+                    content: "Anda adalah KalBot, asisten AI untuk website XyCloud..."
                 },
                 {
                     role: "user",
@@ -32,7 +38,10 @@ module.exports = async (request, response) => {
         return response.status(200).json({ reply: reply });
 
     } catch (error) {
-        console.error("Error calling Groq API:", error);
+        console.error("Error in API function:", error);
         return response.status(500).json({ error: "Gagal berkomunikasi dengan AI." });
     }
 };
+
+// Lalu kita ekspor dengan cara ini
+export default handler;
