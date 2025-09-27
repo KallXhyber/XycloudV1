@@ -1,31 +1,38 @@
-// File: api/chat.js
+// File: api/chat.js (Versi Groq)
 
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+import Groq from "groq-sdk";
 
-// Inisialisasi dengan kunci API dari Vercel Environment Variables
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const groq = new Groq({
+    apiKey: process.env.GROQ_API_KEY,
+});
 
 export default async function handler(request, response) {
-   if (request.method !== 'POST') {
-      return response.status(405).json({ error: "Method Not Allowed" });
-   }
-   
-   try {
-      const { message } = JSON.parse(request.body);
-      
-      const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-      
-      // Beri sedikit konteks agar AI tahu perannya
-      const prompt = `Anda adalah KalBot, asisten AI untuk website XyCloud, layanan sewa PC cloud gaming. Jawab pertanyaan pengguna dengan ramah, singkat, dan informatif dalam Bahasa Indonesia. Pertanyaan pengguna: "${message}"`;
-      
-      const result = await model.generateContent(prompt);
-      const aiResponse = await result.response;
-      const text = aiResponse.text();
-      
-      return response.status(200).json({ reply: text });
-      
-   } catch (error) {
-      console.error("Error calling Gemini API:", error);
-      return response.status(500).json({ error: "Gagal berkomunikasi dengan AI." });
-   }
+    if (request.method !== 'POST') {
+        return response.status(405).json({ error: "Method Not Allowed" });
+    }
+
+    try {
+        const { message } = JSON.parse(request.body);
+
+        const chatCompletion = await groq.chat.completions.create({
+            messages: [
+                {
+                    role: "system",
+                    content: "Anda adalah KalBot, asisten AI untuk website XyCloud, layanan sewa PC cloud gaming. Jawab pertanyaan pengguna dengan ramah, singkat, dan informatif dalam Bahasa Indonesia."
+                },
+                {
+                    role: "user",
+                    content: message,
+                },
+            ],
+            model: "llama3-8b-8192", // Model AI yang sangat cepat
+        });
+
+        const reply = chatCompletion.choices[0]?.message?.content || "Maaf, saya tidak bisa merespons saat ini.";
+        return response.status(200).json({ reply: reply });
+
+    } catch (error) {
+        console.error("Error calling Groq API:", error);
+        return response.status(500).json({ error: "Gagal berkomunikasi dengan AI." });
+    }
 }
