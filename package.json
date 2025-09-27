@@ -1,11 +1,11 @@
 {
   "name": "xycloud-project",
   "version": "1.0.0",
-  "description": "",
+  "description": "Website penyewaan PC Cloud Gaming XyCloud",
   "scripts": {
     "build": "echo \"window.firebaseConfig = { apiKey: '$NEXT_PUBLIC_FIREBASE_API_KEY', authDomain: '$NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN', projectId: '$NEXT_PUBLIC_FIREBASE_PROJECT_ID', storageBucket: '$NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET', messagingSenderId: '$NEXT_PUBLIC_FIREBASE_MESSAGING_ID', appId: '$NEXT_PUBLIC_FIREBASE_APP_ID', measurementId: '$NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID' }; window.SUPABASE_URL = '$NEXT_PUBLIC_SUPABASE_URL'; window.SUPABASE_ANON_KEY = '$NEXT_PUBLIC_SUPABASE_ANON_KEY';\" > js/config.js"
   },
   "dependencies": {
-    "groq-sdk": "^0.3.2"
+    "@google/generative-ai": "^0.2.1"
   }
 }
