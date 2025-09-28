@@ -669,80 +669,83 @@ if (fadeInSections.length > 0) {
     fadeInSections.forEach(section => sectionObserver.observe(section));
 }
 
-// --- (Salin seluruh isi file main.js yang paling lengkap dan final dari respons saya sebelumnya) ---
-// Pastikan blok chatbot di dalamnya adalah seperti di bawah ini:
-
-// --- LOGIKA CHATBOT LENGKAP (VERSI AMAN VIA GROQ API) ---
-const chatbotToggle = document.getElementById('chatbot-toggle');
-if (chatbotToggle) {
+// --- LOGIKA LIVE CHAT (MENGGANTIKAN CHATBOT) ---
+const chatToggle = document.getElementById('chatbot-toggle');
+if (chatToggle) {
     const chatWindow = document.getElementById('chat-window');
     const chatClose = document.getElementById('chat-close');
     const chatBody = document.getElementById('chat-body');
     const chatInput = document.getElementById('chat-input');
     const sendButton = document.getElementById('send-button');
 
-    chatbotToggle.addEventListener('click', () => chatWindow.classList.toggle('open'));
+    chatToggle.addEventListener('click', () => chatWindow.classList.toggle('open'));
     chatClose.addEventListener('click', () => chatWindow.classList.remove('open'));
 
-    const addMessage = (message, sender, isHTML = false) => {
+    const addChatMessage = (msgData) => {
         const msgElement = document.createElement('div');
+        const currentUser = auth.currentUser;
+        
+        // Tentukan apakah pesan ini dari pengguna saat ini atau orang lain
+        const sender = (currentUser && currentUser.uid === msgData.userId) ? 'user' : 'bot';
         msgElement.classList.add('chat-message', `${sender}-message`);
-        if (isHTML) { msgElement.innerHTML = message; } 
-        else { msgElement.textContent = message; }
+        
+        // Buat struktur HTML untuk pesan
+        let senderName = (sender === 'user') ? 'Anda' : msgData.userName;
+        msgElement.innerHTML = `
+            <p class="text-xs font-bold mb-1 ${sender === 'user' ? 'text-right' : 'text-left'} text-blue-300">${senderName}</p>
+            <div>${msgData.text}</div>
+        `;
+        
         chatBody.appendChild(msgElement);
         chatBody.scrollTop = chatBody.scrollHeight;
     };
-    
-    const handleUserInput = async (input, token) => {
-        addMessage('<div class="dot-flashing"></div>', 'bot', true);
-        try {
-            const response = await fetch('/api/chat', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ message: input })
-            });
-            if (!response.ok) { throw new Error('Gagal mendapatkan respons dari server.'); }
-            const data = await response.json();
-            const loadingIndicator = document.querySelector('.bot-message .dot-flashing');
-            if (loadingIndicator) { loadingIndicator.parentElement.remove(); }
-            addMessage(data.reply, 'bot');
-        } catch (error) {
-            const loadingIndicator = document.querySelector('.bot-message .dot-flashing');
-            if (loadingIndicator) { loadingIndicator.parentElement.remove(); }
-            addMessage('Maaf, terjadi kesalahan. Coba lagi nanti.', 'bot');
-            console.error(error);
-        }
-    };
 
     const sendMessage = async () => {
-        const message = chatInput.value.trim();
-        if (!message) return;
-        
+        const messageText = chatInput.value.trim();
         const user = auth.currentUser;
+
+        if (!messageText) return;
+
         if (!user) {
-            addMessage("Anda harus login untuk menggunakan chatbot.", 'bot');
+            showToast('error', 'Anda harus login untuk mengirim pesan.');
             return;
         }
-
-        addMessage(message, 'user');
+        
         chatInput.value = '';
         
         try {
-            const token = await user.getIdToken(true);
-            handleUserInput(message, token);
+            // Dapatkan data pengguna saat ini untuk disimpan bersama pesan
+            const userDoc = await getDoc(doc(db, 'users', user.uid));
+            const userData = userDoc.data();
+
+            // Simpan pesan baru ke koleksi 'live_chat' di Firestore
+            await addDoc(collection(db, 'live_chat'), {
+                text: messageText,
+                userId: user.uid,
+                userName: userData.displayName || 'Anonim',
+                createdAt: serverTimestamp()
+            });
         } catch (error) {
-            addMessage("Gagal mendapatkan token autentikasi. Coba login ulang.", 'bot');
-            console.error("Token Error:", error);
+            console.error("Error sending message:", error);
+            showToast('error', 'Gagal mengirim pesan.');
         }
     };
 
     sendButton.addEventListener('click', sendMessage);
     chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
     
-    setTimeout(() => {
-        addMessage("Halo! Saya KalBot AI. Ada yang bisa dibantu?", 'bot');
-    }, 1500);
+    // Listener Real-time: Bagian paling penting
+    // Fungsi ini akan berjalan setiap kali ada pesan baru di koleksi 'live_chat'
+    const q = query(collection(db, "live_chat"), orderBy("createdAt", "desc"), limit(50));
+    onSnapshot(q, (querySnapshot) => {
+        chatBody.innerHTML = ''; // Kosongkan chat window setiap ada update
+        const messages = [];
+        querySnapshot.forEach((doc) => {
+            messages.push(doc.data());
+        });
+        // Balik urutan array agar pesan terlama di atas
+        messages.reverse().forEach(msg => {
+            addChatMessage(msg);
+        });
+    });
 }
