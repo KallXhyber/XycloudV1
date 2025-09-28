@@ -669,33 +669,32 @@ if (fadeInSections.length > 0) {
     fadeInSections.forEach(section => sectionObserver.observe(section));
 }
 
-// --- LOGIKA LIVE CHAT (MENGGANTIKAN CHATBOT) ---
-const chatToggle = document.getElementById('chatbot-toggle');
-if (chatToggle) {
-    const chatWindow = document.getElementById('chat-window');
-    const chatClose = document.getElementById('chat-close');
+// --- LOGIKA BARU UNTUK HALAMAN RUANG CHAT ---
+else if (window.location.pathname.endsWith('ruang-chat.html')) {
     const chatBody = document.getElementById('chat-body');
     const chatInput = document.getElementById('chat-input');
     const sendButton = document.getElementById('send-button');
+    const chatLinkButton = document.getElementById('chat-link-button');
 
-    chatToggle.addEventListener('click', () => chatWindow.classList.toggle('open'));
-    chatClose.addEventListener('click', () => chatWindow.classList.remove('open'));
+    localStorage.setItem('lastChatVisit', Date.now());
+    if (chatLinkButton) {
+        chatLinkButton.classList.remove('has-notification');
+    }
 
     const addChatMessage = (msgData) => {
         const msgElement = document.createElement('div');
         const currentUser = auth.currentUser;
-        
-        // Tentukan apakah pesan ini dari pengguna saat ini atau orang lain
         const sender = (currentUser && currentUser.uid === msgData.userId) ? 'user' : 'bot';
-        msgElement.classList.add('chat-message', `${sender}-message`);
-        
-        // Buat struktur HTML untuk pesan
-        let senderName = (sender === 'user') ? 'Anda' : msgData.userName;
+        msgElement.classList.add('chat-message', 'flex', 'flex-col', 'max-w-xs', 'md:max-w-md');
+        if (sender === 'user') {
+            msgElement.classList.add('self-end', 'items-end');
+        } else {
+            msgElement.classList.add('self-start', 'items-start');
+        }
+        let senderName = (sender === 'user') ? 'Anda' : (msgData.userName || 'Anonim');
         msgElement.innerHTML = `
-            <p class="text-xs font-bold mb-1 ${sender === 'user' ? 'text-right' : 'text-left'} text-blue-300">${senderName}</p>
-            <div>${msgData.text}</div>
-        `;
-        
+            <p class="text-xs font-bold mb-1 text-blue-300">${senderName}</p>
+            <div class="p-3 rounded-lg ${sender === 'user' ? 'bg-blue-600' : 'bg-gray-700'}">${msgData.text}</div>`;
         chatBody.appendChild(msgElement);
         chatBody.scrollTop = chatBody.scrollHeight;
     };
@@ -703,22 +702,15 @@ if (chatToggle) {
     const sendMessage = async () => {
         const messageText = chatInput.value.trim();
         const user = auth.currentUser;
-
         if (!messageText) return;
-
         if (!user) {
             showToast('error', 'Anda harus login untuk mengirim pesan.');
             return;
         }
-        
         chatInput.value = '';
-        
         try {
-            // Dapatkan data pengguna saat ini untuk disimpan bersama pesan
             const userDoc = await getDoc(doc(db, 'users', user.uid));
             const userData = userDoc.data();
-
-            // Simpan pesan baru ke koleksi 'live_chat' di Firestore
             await addDoc(collection(db, 'live_chat'), {
                 text: messageText,
                 userId: user.uid,
@@ -734,11 +726,12 @@ if (chatToggle) {
     sendButton.addEventListener('click', sendMessage);
     chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
     
-    // Listener Real-time: Bagian paling penting
-    // Fungsi ini akan berjalan setiap kali ada pesan baru di koleksi 'live_chat'
+    const q = query(collection(db, "live_chat"), orderBy("createdAt", "desc"), limit(50));
+    // Listener Real-time
     const q = query(collection(db, "live_chat"), orderBy("createdAt", "desc"), limit(50));
     onSnapshot(q, (querySnapshot) => {
-        chatBody.innerHTML = ''; // Kosongkan chat window setiap ada update
+        if (!chatBody) return;
+        chatBody.innerHTML = '';
         const messages = [];
         querySnapshot.forEach((doc) => {
             messages.push(doc.data());
