@@ -669,8 +669,7 @@ if (fadeInSections.length > 0) {
     fadeInSections.forEach(section => sectionObserver.observe(section));
 }
 
-// --- LOGIKA CHATBOT LENGKAP (FINAL) ---
-// --- LOGIKA CHATBOT LENGKAP (FINAL DENGAN AI) ---
+// --- LOGIKA CHATBOT LENGKAP (VERSI GEMINI CLIENT-SIDE - TIDAK AMAN) ---
 const chatbotToggle = document.getElementById('chatbot-toggle');
 if (chatbotToggle) {
     const chatWindow = document.getElementById('chat-window');
@@ -678,66 +677,56 @@ if (chatbotToggle) {
     const chatBody = document.getElementById('chat-body');
     const chatInput = document.getElementById('chat-input');
     const sendButton = document.getElementById('send-button');
-    
+
+    // 👇 PASTE KUNCI API GEMINI ANDA DI SINI (SANGAT TIDAK AMAN) 👇
+    const GEMINI_API_KEY = "AIzaSyD41byiwQf_A72VBspZf6IGJUrkjrbSrcw";
+    const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
+
     chatbotToggle.addEventListener('click', () => chatWindow.classList.toggle('open'));
     chatClose.addEventListener('click', () => chatWindow.classList.remove('open'));
-    
+
     const addMessage = (message, sender, isHTML = false) => {
         const msgElement = document.createElement('div');
         msgElement.classList.add('chat-message', `${sender}-message`);
-        if (isHTML) { msgElement.innerHTML = message; }
+        if (isHTML) { msgElement.innerHTML = message; } 
         else { msgElement.textContent = message; }
         chatBody.appendChild(msgElement);
         chatBody.scrollTop = chatBody.scrollHeight;
     };
     
-    const addQuickReplies = (replies) => {
-        const container = document.createElement('div');
-        container.className = 'quick-replies';
-        replies.forEach(reply => {
-            const button = document.createElement('button');
-            button.textContent = reply;
-            button.addEventListener('click', () => {
-                addMessage(reply, 'user');
-                handleUserInput(reply);
-            });
-            container.appendChild(button);
-        });
-        chatBody.appendChild(container);
-        chatBody.scrollTop = chatBody.scrollHeight;
-    };
-    
     const handleUserInput = async (input) => {
-    document.querySelector('.quick-replies')?.remove();
-    addMessage('<div class="dot-flashing"></div>', 'bot', true);
-    
-    try {
-        // Panggil API yang kita buat di Vercel
-        const response = await fetch('/api/chat', {
-            method: 'POST',
-            body: JSON.stringify({ message: input })
-        });
+        addMessage('<div class="dot-flashing"></div>', 'bot', true);
         
-        if (!response.ok) {
-            throw new Error('Gagal mendapatkan respons dari server.');
+        try {
+            const response = await fetch(GEMINI_API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    "contents": [{"parts":[{"text": `Anda adalah KalBot, asisten AI untuk website XyCloud... Jawab pertanyaan pengguna: "${input}"`}]}]
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error("Error from Gemini API:", errorData);
+                throw new Error('Gagal mendapatkan respons dari server Gemini.');
+            }
+
+            const data = await response.json();
+            const aiReply = data.candidates[0]?.content?.parts[0]?.text || "Maaf, terjadi kesalahan.";
+            
+            const loadingIndicator = document.querySelector('.bot-message .dot-flashing');
+            if (loadingIndicator) { loadingIndicator.parentElement.remove(); }
+            addMessage(aiReply, 'bot');
+
+        } catch (error) {
+            console.error(error);
+            const loadingIndicator = document.querySelector('.bot-message .dot-flashing');
+            if (loadingIndicator) { loadingIndicator.parentElement.remove(); }
+            addMessage('Maaf, terjadi kesalahan saat menghubungi AI.', 'bot');
         }
-        
-        const data = await response.json();
-        const aiReply = data.reply;
-        
-        // Hapus indikator loading dan tampilkan jawaban AI
-        const loadingIndicator = document.querySelector('.bot-message .dot-flashing');
-        if (loadingIndicator) { loadingIndicator.parentElement.remove(); }
-        addMessage(aiReply, 'bot');
-        
-    } catch (error) {
-        const loadingIndicator = document.querySelector('.bot-message .dot-flashing');
-        if (loadingIndicator) { loadingIndicator.parentElement.remove(); }
-        addMessage('Maaf, terjadi kesalahan. Coba lagi nanti.', 'bot');
-        console.error(error);
-    }
-};
-    
+    };
+
     const sendMessage = () => {
         const message = chatInput.value.trim();
         if (message) {
@@ -746,13 +735,11 @@ if (chatbotToggle) {
             handleUserInput(message);
         }
     };
-    
-    sendButton.addEventListener('click', sendMessage);
-chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
 
-// Pesan sambutan
-setTimeout(() => {
-    addMessage("Halo! Saya KalBot AI. Ada yang bisa dibantu?", 'bot');
-    addQuickReplies(['Info Harga', 'Cara Pesan', 'Spesifikasi PC']);
-}, 1500);
+    sendButton.addEventListener('click', sendMessage);
+    chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+    
+    setTimeout(() => {
+        addMessage("Halo! Saya KalBot AI. Ada yang bisa dibantu?", 'bot');
+    }, 1500);
 }
