@@ -7,8 +7,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/main.css">
-    <script src="//cdn.jsdelivr.net/npm/eruda"></script>
-    <script>eruda.init();</script>
 </head>
 <body class="bg-gray-950 text-gray-100 font-['Inter',_sans-serif]">
     <div id="loading-overlay"><svg class="loading-svg" viewBox="25 25 50 50"><circle class="loading-path" cx="50" cy="50" r="20" fill="none" stroke-width="4" stroke-miterlimit="10"/></svg></div>
@@ -20,17 +18,23 @@
                     <li><a href="index.html" class="hover:text-blue-400 transition-colors">Beranda</a></li>
                     <li><a href="paket.html" class="hover:text-blue-400 transition-colors">Paket</a></li>
                     <li><a href="akun-gta.html" class="hover:text-blue-400 transition-colors">Akun GTA</a></li>
-                    <li><a href="bantuan.html" class="hover:text-blue-400 transition-colors">Bantuan</a></li>
                     <li><a href="transaksi.html" class="text-blue-400 font-bold border-b-2 border-blue-400 pb-1">Transaksi</a></li>
+                    <li><a href="bantuan.html" class="hover:text-blue-400 transition-colors">Bantuan</a></li>
                     <li id="header-login-button"><a href="login.html" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-5 rounded-full transition-colors">Login</a></li>
-                    <li id="header-user-menu" class="hidden relative user-menu"><button class="flex items-center gap-2"><img id="header-user-avatar" src="" class="w-8 h-8 rounded-full"><svg class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg></button><div class="settings-dropdown w-48"><a href="dashboard.html" class="dropdown-item">Dashboard</a><a id="admin-panel-link" href="admin.html" class="dropdown-item hidden">Panel Admin</a><button id="header-logout-button" class="dropdown-item text-red-400 w-full text-left">Logout</button></div></li>
+                    <li id="header-user-menu" class="hidden relative user-menu">
+                        <button class="flex items-center gap-2"><img id="header-user-avatar" src="" class="w-8 h-8 rounded-full"><svg class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg></button>
+                        <div class="settings-dropdown w-48">
+                            <a href="dashboard.html" class="dropdown-item">Dashboard</a>
+                            <a id="admin-panel-link" href="admin.html" class="dropdown-item hidden">Panel Admin</a>
+                            <button id="header-logout-button" class="dropdown-item text-red-400 w-full text-left">Logout</button>
+                        </div>
+                    </li>
                 </ul>
             </nav>
             <button id="mobile-menu-toggle" class="lg:hidden text-white focus:outline-none"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg></button>
         </div>
         <nav id="mobile-menu" class="lg:hidden mt-4 hidden"></nav>
     </header>
-
     <main class="container mx-auto p-4 md:p-8">
         <section class="my-12">
             <h2 class="text-4xl md:text-5xl font-extrabold text-center mb-12 text-white">Riwayat Transaksi</h2>
@@ -42,11 +46,11 @@
             </div>
         </section>
     </main>
-    
     <footer class="bg-gray-900 text-center p-6 mt-8 text-gray-500"><p>&copy; 2024 XyCloud. Semua Hak Cipta Dilindungi.</p><p class="mt-2 text-sm"><a href="bantuan.html" class="hover:text-blue-400 transition-colors">Bantuan</a> &bull; <a href="kontak.html" class="hover:text-blue-400 transition-colors">Hubungi Kami</a></p></footer>
 
-    <div id="toast-container"></div>
-    <div id="live-feed-container"></div>
+    <a href="ruang-chat.html" id="chat-link-button" class="fixed bottom-4 right-4 bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg transition-transform transform hover:scale-110 z-50">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.76 9.76 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-.065 4.48 4.48 0 0 0 .978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z" /></svg>
+    </a>
     
     <script type="importmap">{ "imports": { "firebase/app": "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js", "firebase/auth": "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js", "firebase/firestore": "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js" } }</script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
