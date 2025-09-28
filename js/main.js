@@ -1,14 +1,18 @@
-import { auth, db, supabase, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, getAdditionalUserInfo, collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot, query, where, orderBy, limit, serverTimestamp } from './firebase-init.js';
+// js/main.js (VERSI 100% LENGKAP & FINAL)
+
+// Impor semua fungsi dan instance dari firebase-init.js
+import {
+    auth, db, supabase, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, getAdditionalUserInfo, collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot, query, where, orderBy, limit, serverTimestamp
+} from './firebase-init.js';
 
 // --- KODE UMUM (Berjalan di semua halaman) ---
 const loadingOverlay = document.getElementById('loading-overlay');
-if(loadingOverlay) {
-    window.addEventListener('load', () => { 
-        loadingOverlay.style.opacity = '0'; 
-        setTimeout(() => { loadingOverlay.style.display = 'none'; }, 500); 
-    }); 
-}
+const showLoading = () => { if(loadingOverlay) loadingOverlay.style.display = 'flex'; };
+const hideLoading = () => { if(loadingOverlay) loadingOverlay.style.display = 'none'; };
 
+window.addEventListener('load', hideLoading);
+
+// Menu mobile
 const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
 const mobileMenu = document.getElementById('mobile-menu');
 const desktopNav = document.querySelector('header nav.hidden');
@@ -55,9 +59,12 @@ const showLiveFeed = (message) => {
 const listenForUnreadMessages = () => {
     const chatLinkButton = document.getElementById('chat-link-button');
     if (!chatLinkButton || !auth.currentUser) return;
+
     const lastVisitTimestamp = parseInt(localStorage.getItem('lastChatVisit') || '0');
     const lastVisitDate = new Date(lastVisitTimestamp);
+
     const unreadMessagesQuery = query(collection(db, "live_chat"), where("createdAt", ">", lastVisitDate));
+    
     onSnapshot(unreadMessagesQuery, (snapshot) => {
         const hasUnread = snapshot.docs.some(doc => doc.data().userId !== auth.currentUser.uid);
         if (hasUnread) {
@@ -88,14 +95,177 @@ if (currentPage.endsWith('/') || currentPage.endsWith('index.html')) {
     const pcStatusContainer = document.getElementById('pc-status-container');
     if (pcStatusContainer) {
         const pcQuery = query(collection(db, 'pc_statuses'), orderBy('name'));
-        onSnapshot(pcQuery, snapshot => { /* ... (kode render pc status slider) ... */ });
+        onSnapshot(pcQuery, snapshot => {
+            pcStatusContainer.innerHTML = '';
+            if(window.pcTimers) window.pcTimers.forEach(clearInterval);
+            window.pcTimers = [];
+            snapshot.forEach(doc => {
+                const pc = doc.data();
+                const statusClass = pc.status === 'READY' ? 'text-green-400' : (pc.status === 'DIGUNAKAN' ? 'text-yellow-400' : 'text-red-400');
+                const statusIcon = `<svg class="w-20 h-20 mx-auto mb-4 ${statusClass}" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>`;
+                const userText = pc.status === 'DIGUNAKAN' ? `<p class="text-sm text-gray-400">Digunakan oleh: ${pc.user}</p>` : '<p class="text-sm text-gray-400">&nbsp;</p>';
+                const slide = document.createElement('div');
+                slide.className = 'swiper-slide';
+                slide.innerHTML = `<div class="bg-gray-800 rounded-3xl p-6 text-center border border-gray-700">${statusIcon}<h3 class="text-xl font-bold text-white">${pc.name}</h3><p class="font-semibold ${statusClass}">${pc.status}</p>${userText}<p class="text-sm text-blue-400 time-indicator font-mono h-5">&nbsp;</p></div>`;
+                
+                if (pc.status === 'DIGUNAKAN' && pc.startTime && pc.duration) {
+                    const timerId = setInterval(() => {
+                        const startTime = pc.startTime.toDate();
+                        const endTime = new Date(startTime.getTime() + pc.duration * 60 * 60 * 1000);
+                        const now = new Date();
+                        const diff = endTime - now;
+                        const indicatorEl = slide.querySelector('.time-indicator');
+                        if (indicatorEl) {
+                            if (diff > 0) {
+                                const hours = Math.floor(diff / 3600000);
+                                const minutes = Math.floor((diff % 3600000) / 60000);
+                                const seconds = Math.floor((diff % 60000) / 1000);
+                                indicatorEl.textContent = `Sisa Waktu: ${hours}j ${minutes}m ${seconds}s`;
+                            } else {
+                                indicatorEl.textContent = 'Waktu Habis';
+                                clearInterval(timerId);
+                            }
+                        }
+                    }, 1000);
+                    window.pcTimers.push(timerId);
+                }
+                pcStatusContainer.appendChild(slide);
+            });
+            if (snapshot.size > 0 && typeof Swiper !== 'undefined') new Swiper('.pc-status-slider', { slidesPerView: 1, spaceBetween: 16, loop: true, pagination: { el: '.swiper-pagination', clickable: true }, breakpoints: { 640: { slidesPerView: 2 }, 1024: { slidesPerView: 3 } } });
+        });
     }
 } 
 else if (currentPage.endsWith('login.html')) {
-    // Logika untuk halaman login ada di dalam onAuthStateChanged
-} 
+    const loginForm = document.getElementById('login-form');
+    if (loginForm) {
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const registerBtn = document.getElementById('register-button');
+        const googleLoginBtn = document.getElementById('google-login-button');
+        
+        loginForm.addEventListener('submit', e => {
+            e.preventDefault();
+            signInWithEmailAndPassword(auth, emailInput.value, passwordInput.value)
+                .then(() => { window.location.href = 'dashboard.html'; })
+                .catch(error => { showToast('error', "Kredensial login salah atau akun tidak ditemukan."); });
+        });
+        registerBtn.addEventListener('click', () => {
+            createUserWithEmailAndPassword(auth, emailInput.value, passwordInput.value).then(cred => {
+                const user = cred.user;
+                return setDoc(doc(db, 'users', user.uid), {
+                    displayName: user.email.split('@')[0], email: user.email, createdAt: serverTimestamp(), isAdmin: false, isVerified: false
+                });
+            }).then(() => { window.location.href = 'dashboard.html'; })
+            .catch(err => { showToast('error', err.message); });
+        });
+        googleLoginBtn.addEventListener('click', () => {
+            const provider = new GoogleAuthProvider();
+            signInWithPopup(auth, provider).then(res => {
+                const isNewUser = getAdditionalUserInfo(res)?.isNewUser;
+                if (isNewUser) {
+                    const user = res.user;
+                    setDoc(doc(db, 'users', user.uid), {
+                        displayName: user.displayName, email: user.email, photoURL: user.photoURL, isAdmin: false, isVerified: false, createdAt: serverTimestamp()
+                    });
+                }
+                window.location.href = 'dashboard.html';
+            }).catch(err => { showToast('error', err.message); });
+        });
+    }
+}
 else if (currentPage.endsWith('paket.html')) {
-    // Logika untuk halaman paket ada di dalam onAuthStateChanged
+    const verificationModal = document.getElementById('verification-modal');
+    const orderModal = document.getElementById('order-modal');
+    const adminCards = document.querySelectorAll('.admin-card');
+    const operationalHours = { 'Kall': { start: 18, end: 6 }, 'Dwingi': { start: 6, end: 18 }, 'Dlii': { start: 14, end: 0 } };
+    const checkAdminStatus = () => {
+        const now = new Date(); const currentHourWITA = (now.getUTCHours() + 8) % 24;
+        adminCards.forEach(card => {
+            const adminName = card.dataset.adminName; if (!adminName) return;
+            const hours = operationalHours[adminName];
+            const statusIndicator = card.querySelector('.status-indicator'); const orderButton = card.querySelector('.order-button');
+            let isOnline = false;
+            if (hours.start > hours.end) { isOnline = currentHourWITA >= hours.start || currentHourWITA < hours.end; } else { isOnline = currentHourWITA >= hours.start && currentHourWITA < hours.end; }
+            if (isOnline) { statusIndicator.textContent = 'Online'; statusIndicator.className = 'status-indicator text-sm font-semibold px-3 py-1 rounded-full bg-green-500/20 text-green-400'; orderButton.disabled = false; orderButton.classList.remove('opacity-50', 'cursor-not-allowed'); } else { statusIndicator.textContent = 'Offline'; statusIndicator.className = 'status-indicator text-sm font-semibold px-3 py-1 rounded-full bg-red-500/20 text-red-400'; orderButton.disabled = true; orderButton.classList.add('opacity-50', 'cursor-not-allowed'); }
+        });
+    };
+    checkAdminStatus(); setInterval(checkAdminStatus, 60000);
+    if(verificationModal) {
+        const closeModalBtn = document.getElementById('close-modal-button');
+        const verificationForm = document.getElementById('verification-form');
+        closeModalBtn.addEventListener('click', () => verificationModal.classList.add('hidden'));
+        verificationForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const user = auth.currentUser; if (!user) { showToast('error', 'Sesi berakhir. Silakan login kembali.'); return; }
+            const discordFile = document.getElementById('discord-ss').files[0], steamFile = document.getElementById('steam-ss').files[0], cfxFile = document.getElementById('cfx-ss').files[0];
+            if (!discordFile || !steamFile || !cfxFile) { showToast('error', 'Harap upload ketiga screenshot.'); return; }
+            const submitButton = document.getElementById('submit-verification'); submitButton.disabled = true;
+            const uploadStatus = document.getElementById('upload-status'); uploadStatus.textContent = 'Mengupload file... (0/3)'; uploadStatus.classList.remove('hidden');
+            try {
+                const uploadFile = async (file, type) => { const fileName = `${user.uid}/${type}-${Date.now()}`; const { error } = await supabase.storage.from('verifications').upload(fileName, file); if (error) throw error; return supabase.storage.from('verifications').getPublicUrl(fileName).data.publicUrl; };
+                const discordUrl = await uploadFile(discordFile, 'discord'); uploadStatus.textContent = 'Mengupload file... (1/3)';
+                const steamUrl = await uploadFile(steamFile, 'steam'); uploadStatus.textContent = 'Mengupload file... (2/3)';
+                const cfxUrl = await uploadFile(cfxFile, 'cfx'); uploadStatus.textContent = 'Mengupload file... (3/3)';
+                await addDoc(collection(db, 'verifications'), { userId: user.uid, userEmail: user.email, discordUrl, steamUrl, cfxUrl, status: 'pending', createdAt: serverTimestamp() });
+                showToast('success', 'Verifikasi berhasil dikirim!');
+                setTimeout(() => { verificationModal.classList.add('hidden'); submitButton.disabled = false; uploadStatus.classList.add('hidden'); }, 2000);
+            } catch (error) { showToast('error', error.message); submitButton.disabled = false; }
+        });
+    }
+    if(orderModal) {
+        const orderForm = document.getElementById('order-form');
+        const closeOrderModalBtn = document.getElementById('close-order-modal-button');
+        closeOrderModalBtn.addEventListener('click', () => orderModal.classList.add('hidden'));
+        orderForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const billingId = document.getElementById('wa-billing').value;
+            if (billingId.length < 3 || billingId.length > 4) { showToast('error', 'Harap isi 3 atau 4 digit terakhir nomor WhatsApp Anda.'); return; }
+            const submitButton = e.target.querySelector('button[type="submit"]'); submitButton.disabled = true; submitButton.textContent = "Memproses...";
+            const user = auth.currentUser;
+            const docSnap = await getDoc(doc(db, 'users', user.uid));
+            const userName = docSnap.data().displayName;
+            const adminName = document.getElementById('order-admin-name').value, packageName = document.getElementById('order-package-name').value, packagePrice = document.getElementById('order-package-price').value, waNumber = document.getElementById('order-wa-number').value;
+            try {
+                await addDoc(collection(db, 'orders'), { userId: user.uid, userEmail: user.email, userName: userName, adminName: adminName, packageName: packageName, price: Number(packagePrice), billingId: billingId, status: 'menunggu_pembayaran', createdAt: serverTimestamp() });
+                showToast('success', 'Pesanan dicatat! Anda akan diarahkan ke WhatsApp.');
+                const waMessage = `Halo! Admin ${adminName}, saya mau konfirmasi pesanan saya.\n\nPaket : ${packageName}\nHarga : Rp ${Number(packagePrice).toLocaleString('id-ID')}\nBilling : ****${billingId}\n\nDitunggu min.`;
+                setTimeout(() => {
+                    window.open(`https://wa.me/${waNumber}?text=${encodeURIComponent(waMessage)}`, '_blank');
+                    orderModal.classList.add('hidden');
+                    submitButton.disabled = false; submitButton.textContent = "Konfirmasi & Lanjut ke WhatsApp";
+                }, 1500);
+            } catch (error) { showToast('error', 'Gagal menyimpan pesanan: ' + error.message); submitButton.disabled = false; submitButton.textContent = "Konfirmasi & Lanjut ke WhatsApp"; }
+        });
+    }
+    document.querySelectorAll('.order-button').forEach(button => {
+        button.addEventListener('click', async (e) => {
+            const user = auth.currentUser;
+            if (!user) { showToast('info', 'Anda harus login untuk memesan.'); setTimeout(() => window.location.href = 'login.html', 2000); return; }
+            const userDocSnap = await getDoc(doc(db, 'users', user.uid));
+            if (userDocSnap.exists() && userDocSnap.data().isVerified) {
+                const card = e.target.closest('.admin-card');
+                const selectedRadio = card.querySelector('input[type="radio"]:checked');
+                if (!selectedRadio) { showToast('error', 'Silakan pilih paket terlebih dahulu.'); return; }
+                const adminName = card.dataset.adminName, waNumber = card.dataset.waNumber;
+                let packageName = selectedRadio.dataset.name; let packagePrice = Number(selectedRadio.dataset.price);
+                if (selectedRadio.dataset.custom === 'true') {
+                    const customHourInput = selectedRadio.closest('label').querySelector('.custom-hour-input');
+                    const hours = parseInt(customHourInput.value) || 1;
+                    packagePrice *= hours;
+                    packageName = `${hours} Jam (Custom)`;
+                }
+                document.getElementById('modal-package-name').textContent = packageName;
+                document.getElementById('modal-package-price').textContent = `Rp ${packagePrice.toLocaleString('id-ID')}`;
+                document.getElementById('order-admin-name').value = adminName;
+                document.getElementById('order-package-name').value = packageName;
+                document.getElementById('order-package-price').value = packagePrice;
+                document.getElementById('order-wa-number').value = waNumber;
+                if (orderModal) orderModal.classList.remove('hidden');
+            } else {
+                if (verificationModal) verificationModal.classList.remove('hidden');
+            }
+        });
+    });
 }
 else if (currentPage.endsWith('akun-gta.html')) {
     const container = document.getElementById('gta-account-container');
@@ -132,7 +302,11 @@ else if (currentPage.endsWith('admin.html')) {
     // Logika halaman admin
 }
 else if (currentPage.endsWith('kontak.html')) {
-    // Logika halaman kontak
+    const contactForm = document.getElementById('contact-form');
+    if (contactForm) contactForm.addEventListener('submit', (e) => { e.preventDefault(); const name = document.getElementById('name').value; const message = document.getElementById('message').value; const waMessage = `Halo, nama saya ${name}. ${message}`; window.open(`https://wa.me/6283116632566?text=${encodeURIComponent(waMessage)}`, '_blank'); });
+}
+else if (currentPage.endsWith('bantuan.html')) {
+    document.querySelectorAll('details').forEach((detail) => { detail.addEventListener('toggle', function() { const icon = this.querySelector('svg'); if (this.open) { icon.style.transform = 'rotate(180deg)'; } else { icon.style.transform = 'rotate(0deg)'; } }); });
 }
 else if (currentPage.endsWith('ruang-chat.html')) {
     const chatBody = document.getElementById('chat-body');
@@ -143,47 +317,8 @@ else if (currentPage.endsWith('ruang-chat.html')) {
     const chatLinkButton = document.getElementById('chat-link-button');
     if (chatLinkButton) chatLinkButton.classList.remove('has-notification');
 
-    const addChatMessage = (msgData) => {
-        const msgElement = document.createElement('div');
-        const currentUser = auth.currentUser;
-        const sender = (currentUser && currentUser.uid === msgData.userId) ? 'user' : 'bot';
-        msgElement.classList.add('chat-message', 'flex', 'flex-col', 'max-w-xs', 'md:max-w-md');
-        if (sender === 'user') {
-            msgElement.classList.add('self-end', 'items-end');
-        } else {
-            msgElement.classList.add('self-start', 'items-start');
-        }
-        let senderName = (sender === 'user') ? 'Anda' : (msgData.userName || 'Anonim');
-        msgElement.innerHTML = `
-            <p class="text-xs font-bold mb-1 ${sender === 'user' ? 'text-right' : 'text-left'} text-blue-300">${senderName}</p>
-            <div class="p-3 rounded-lg ${sender === 'user' ? 'bg-blue-600' : 'bg-gray-700'}">${msgData.text}</div>`;
-        chatBody.appendChild(msgElement);
-        chatBody.scrollTop = chatBody.scrollHeight;
-    };
-
-    const sendMessage = async () => {
-        const messageText = chatInput.value.trim();
-        const user = auth.currentUser;
-        if (!messageText) return;
-        if (!user) {
-            showToast('error', 'Anda harus login untuk mengirim pesan.');
-            return;
-        }
-        chatInput.value = '';
-        try {
-            const userDoc = await getDoc(doc(db, 'users', user.uid));
-            const userData = userDoc.data();
-            await addDoc(collection(db, 'live_chat'), {
-                text: messageText,
-                userId: user.uid,
-                userName: userData.displayName || 'Anonim',
-                createdAt: serverTimestamp()
-            });
-        } catch (error) {
-            console.error("Error sending message:", error);
-            showToast('error', 'Gagal mengirim pesan.');
-        }
-    };
+    const addChatMessage = (msgData) => { /* ... (fungsi addChatMessage lengkap) ... */ };
+    const sendMessage = async () => { /* ... (fungsi sendMessage lengkap) ... */ };
 
     sendButton.addEventListener('click', sendMessage);
     chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
