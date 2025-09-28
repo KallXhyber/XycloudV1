@@ -680,7 +680,9 @@ if (chatbotToggle) {
 
     // 👇 PASTE KUNCI API GEMINI ANDA DI SINI (SANGAT TIDAK AMAN) 👇
     const GEMINI_API_KEY = "AIzaSyD41byiwQf_A72VBspZf6IGJUrkjrbSrcw";
-    const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
+    
+    // --- PERBAIKAN DI BARIS DI BAWAH INI ---
+    const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
 
     chatbotToggle.addEventListener('click', () => chatWindow.classList.toggle('open'));
     chatClose.addEventListener('click', () => chatWindow.classList.remove('open'));
@@ -698,11 +700,18 @@ if (chatbotToggle) {
         addMessage('<div class="dot-flashing"></div>', 'bot', true);
         
         try {
+            // Langsung memanggil API Google Gemini dari browser
             const response = await fetch(GEMINI_API_URL, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json'
+                },
                 body: JSON.stringify({
-                    "contents": [{"parts":[{"text": `Anda adalah KalBot, asisten AI untuk website XyCloud... Jawab pertanyaan pengguna: "${input}"`}]}]
+                    "contents": [{
+                        "parts":[{
+                            "text": `Anda adalah KalBot, asisten AI untuk website XyCloud, layanan sewa PC cloud gaming. Jawab pertanyaan pengguna dengan ramah, singkat, dan informatif dalam Bahasa Indonesia. Pertanyaan pengguna: "${input}"`
+                        }]
+                    }]
                 })
             });
 
@@ -715,6 +724,7 @@ if (chatbotToggle) {
             const data = await response.json();
             const aiReply = data.candidates[0]?.content?.parts[0]?.text || "Maaf, terjadi kesalahan.";
             
+            // Hapus indikator loading dan tampilkan jawaban AI
             const loadingIndicator = document.querySelector('.bot-message .dot-flashing');
             if (loadingIndicator) { loadingIndicator.parentElement.remove(); }
             addMessage(aiReply, 'bot');
@@ -739,6 +749,7 @@ if (chatbotToggle) {
     sendButton.addEventListener('click', sendMessage);
     chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
     
+    // Pesan sambutan
     setTimeout(() => {
         addMessage("Halo! Saya KalBot AI. Ada yang bisa dibantu?", 'bot');
     }, 1500);
