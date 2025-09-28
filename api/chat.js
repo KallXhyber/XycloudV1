@@ -1,9 +1,9 @@
-// File: api/chat.js (Versi Final dengan Pengecekan Login)
+// File: api/chat.js (Versi Perbaikan Final)
 
 const { Groq } = require("groq-sdk");
 const admin = require("firebase-admin");
 
-// Inisialisasi Firebase Admin SDK dari Environment Variable
+// Inisialisasi Firebase Admin SDK
 try {
   const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
   if (!admin.apps.length) {
@@ -15,7 +15,6 @@ try {
   console.error('Firebase Admin Initialization Error:', e);
 }
 
-// Inisialisasi Groq dari Environment Variable
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 module.exports = async (request, response) => {
@@ -30,21 +29,27 @@ module.exports = async (request, response) => {
             return response.status(401).json({ error: 'Unauthorized: No token provided.' });
         }
         const idToken = authorization.split('Bearer ')[1];
-        // Jika token tidak valid, baris di bawah ini akan error dan masuk ke blok catch
-        await admin.auth().verifyIdToken(idToken); 
+        await admin.auth().verifyIdToken(idToken);
 
         // 2. Jika verifikasi berhasil, lanjutkan ke AI
-        const { message } = JSON.parse(request.body);
+        
+        // --- PERBAIKAN DI BARIS DI BAWAH INI ---
+        // Hapus JSON.parse karena Vercel sudah melakukannya otomatis
+        const { message } = request.body; 
+
+        if (!message) {
+            return response.status(400).json({ error: "Message is required." });
+        }
 
         const chatCompletion = await groq.chat.completions.create({
             messages: [
-                { role: "system", content: "Anda adalah KalBot, asisten AI untuk website XyCloud, layanan sewa PC cloud gaming. Jawab pertanyaan pengguna dengan ramah, singkat, dan informatif dalam Bahasa Indonesia." },
+                { role: "system", content: "Anda adalah KalBot, asisten AI untuk website XyCloud..." },
                 { role: "user", content: message }
             ],
             model: "gemma-7b-it",
         });
 
-        const reply = chatCompletion.choices[0]?.message?.content || "Maaf, ada masalah saat memproses jawaban.";
+        const reply = chatCompletion.choices[0]?.message?.content || "Maaf, ada masalah.";
         return response.status(200).json({ reply });
 
     } catch (error) {
