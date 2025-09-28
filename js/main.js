@@ -669,7 +669,10 @@ if (fadeInSections.length > 0) {
     fadeInSections.forEach(section => sectionObserver.observe(section));
 }
 
-// --- LOGIKA CHATBOT LENGKAP (VERSI GEMINI CLIENT-SIDE - TIDAK AMAN) ---
+// --- (Salin seluruh isi file main.js yang paling lengkap dan final dari respons saya sebelumnya) ---
+// Pastikan blok chatbot di dalamnya adalah seperti di bawah ini:
+
+// --- LOGIKA CHATBOT LENGKAP (VERSI AMAN VIA GROQ API) ---
 const chatbotToggle = document.getElementById('chatbot-toggle');
 if (chatbotToggle) {
     const chatWindow = document.getElementById('chat-window');
@@ -677,12 +680,6 @@ if (chatbotToggle) {
     const chatBody = document.getElementById('chat-body');
     const chatInput = document.getElementById('chat-input');
     const sendButton = document.getElementById('send-button');
-
-    // 👇 PASTE KUNCI API GEMINI ANDA DI SINI (SANGAT TIDAK AMAN) 👇
-    const GEMINI_API_KEY = "AIzaSyD41byiwQf_A72VBspZf6IGJUrkjrbSrcw";
-    
-    // --- PERBAIKAN DI BARIS DI BAWAH INI ---
-    const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
 
     chatbotToggle.addEventListener('click', () => chatWindow.classList.toggle('open'));
     chatClose.addEventListener('click', () => chatWindow.classList.remove('open'));
@@ -696,60 +693,55 @@ if (chatbotToggle) {
         chatBody.scrollTop = chatBody.scrollHeight;
     };
     
-    const handleUserInput = async (input) => {
+    const handleUserInput = async (input, token) => {
         addMessage('<div class="dot-flashing"></div>', 'bot', true);
-        
         try {
-            // Langsung memanggil API Google Gemini dari browser
-            const response = await fetch(GEMINI_API_URL, {
+            const response = await fetch('/api/chat', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({
-                    "contents": [{
-                        "parts":[{
-                            "text": `Anda adalah KalBot, asisten AI untuk website XyCloud, layanan sewa PC cloud gaming. Jawab pertanyaan pengguna dengan ramah, singkat, dan informatif dalam Bahasa Indonesia. Pertanyaan pengguna: "${input}"`
-                        }]
-                    }]
-                })
+                body: JSON.stringify({ message: input })
             });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                console.error("Error from Gemini API:", errorData);
-                throw new Error('Gagal mendapatkan respons dari server Gemini.');
-            }
-
+            if (!response.ok) { throw new Error('Gagal mendapatkan respons dari server.'); }
             const data = await response.json();
-            const aiReply = data.candidates[0]?.content?.parts[0]?.text || "Maaf, terjadi kesalahan.";
-            
-            // Hapus indikator loading dan tampilkan jawaban AI
             const loadingIndicator = document.querySelector('.bot-message .dot-flashing');
             if (loadingIndicator) { loadingIndicator.parentElement.remove(); }
-            addMessage(aiReply, 'bot');
-
+            addMessage(data.reply, 'bot');
         } catch (error) {
-            console.error(error);
             const loadingIndicator = document.querySelector('.bot-message .dot-flashing');
             if (loadingIndicator) { loadingIndicator.parentElement.remove(); }
-            addMessage('Maaf, terjadi kesalahan saat menghubungi AI.', 'bot');
+            addMessage('Maaf, terjadi kesalahan. Coba lagi nanti.', 'bot');
+            console.error(error);
         }
     };
 
-    const sendMessage = () => {
+    const sendMessage = async () => {
         const message = chatInput.value.trim();
-        if (message) {
-            addMessage(message, 'user');
-            chatInput.value = '';
-            handleUserInput(message);
+        if (!message) return;
+        
+        const user = auth.currentUser;
+        if (!user) {
+            addMessage("Anda harus login untuk menggunakan chatbot.", 'bot');
+            return;
+        }
+
+        addMessage(message, 'user');
+        chatInput.value = '';
+        
+        try {
+            const token = await user.getIdToken(true);
+            handleUserInput(message, token);
+        } catch (error) {
+            addMessage("Gagal mendapatkan token autentikasi. Coba login ulang.", 'bot');
+            console.error("Token Error:", error);
         }
     };
 
     sendButton.addEventListener('click', sendMessage);
     chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
     
-    // Pesan sambutan
     setTimeout(() => {
         addMessage("Halo! Saya KalBot AI. Ada yang bisa dibantu?", 'bot');
     }, 1500);
